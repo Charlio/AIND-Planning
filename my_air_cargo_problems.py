@@ -132,6 +132,10 @@ class AirCargoProblem(Problem):
         """
         # TODO implement
         possible_actions = []
+        state_decoded = decode_state(state, self.state_map)
+        for action in self.actions_list:
+            if set(action.precond_pos) <= set(state_decoded.pos) and set(action.precond_neg) <= set(state_decoded.neg):
+                possible_actions.append(action)
         return possible_actions
 
     def result(self, state: str, action: Action):
@@ -145,6 +149,17 @@ class AirCargoProblem(Problem):
         """
         # TODO implement
         new_state = FluentState([], [])
+        stated_decoded = decode_state(state, self.state_map)
+        pos_clauses = stated_decoded.pos 
+        neg_clauses = stated_decoded.neg
+        for clause in action.effect_rem:
+            pos_clauses.remove(clause)
+            neg_clauses.append(clause)
+        for clause in action.effect_add:
+            pos_clauses.append(clause)
+            neg_clauses.remove(clause)
+        new_state.pos = pos_clauses
+        new_state.neg = neg_clauses
         return encode_state(new_state, self.state_map)
 
     def goal_test(self, state: str) -> bool:
@@ -240,7 +255,7 @@ def air_cargo_p2() -> AirCargoProblem:
            expr('At(P2, JFK)'),
            expr('At(P3, ATL)'),
            ]
-    neg = [expr('At(C3, SFO'),
+    neg = [expr('At(C3, SFO)'),
            expr('At(C3, JFK)'),
            expr('In(C3, P1)'),
            expr('In(C3, P2)'),
@@ -291,14 +306,14 @@ def air_cargo_p3() -> AirCargoProblem:
            expr('At(P1, SFO)'),
            expr('At(P2, JFK)'),
            ]
-    neg = [expr('At(C4, SFO'),
+    neg = [expr('At(C4, SFO)'),
            expr('At(C4, JFK)'),
            expr('At(C4, ATL)'),
            expr('In(C4, P1)'),
            expr('In(C4, P2)'),
-           expr('At(C3, SFO'),
+           expr('At(C3, SFO)'),
            expr('At(C3, JFK)'),
-           expr('At(C3, ORD)').
+           expr('At(C3, ORD)'),
            expr('In(C3, P1)'),
            expr('In(C3, P2)'),
            expr('At(C2, SFO)'),
